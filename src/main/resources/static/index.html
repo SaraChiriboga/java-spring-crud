@@ -37,6 +37,10 @@
 
 <div class="card card-body shadow-sm">
     <h5>Listado de Personas</h5>
+    <div class="mb-3">
+        <input type="number" id="buscarId" class="form-control" placeholder="Buscar por ID">
+        <button class="btn btn-primary mt-2" onclick="buscarPorId()">Buscar</button>
+    </div>
     <table class="table table-hover mt-3">
         <thead class="table-dark">
         <tr>
@@ -83,6 +87,39 @@
             console.error("Error:", error);
         }
     }
+    async function buscarPorId() {
+    const id = document.getElementById('buscarId').value;
+
+    if (!id) {
+        alert("Ingresa un ID");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/${id}`);
+        if (!res.ok) throw new Error("No encontrado");
+
+        const p = await res.json();
+
+        const html = `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.firstName}</td>
+                <td>${p.lastName}</td>
+                <td>${p.email}</td>
+                <td>${p.phoneNumber}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">Eliminar</button>
+                </td>
+            </tr>
+        `;
+
+        document.getElementById('tablaCuerpo').innerHTML = html;
+
+    } catch (error) {
+        alert("Persona no encontrada");
+    }
+}
 
     // CREATE
     document.getElementById('registroForm').addEventListener('submit', async (e) => {

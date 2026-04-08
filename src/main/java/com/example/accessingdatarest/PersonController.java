@@ -3,6 +3,7 @@ package com.example.accessingdatarest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/people")
@@ -20,7 +21,17 @@ public class PersonController {
     }
 
     // READ (GET)
+        // Leer todos los datos
+    @GetMapping
+    public Iterable<Person> getAllPeople() {
+        return repository.findAll();
+    }
 
+        // Leer por ID
+    @GetMapping("/{id}")
+    public Optional<Person> getPersonById(@PathVariable Long id) {
+        return repository.findById(id);
+    }
     // UPDATE (PATCH)
 
     // DELETE (DELETE)
