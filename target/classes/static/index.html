@@ -9,8 +9,9 @@
 <h2 class="mb-4">Registro de Personas</h2>
 
 <div class="card card-body mb-4 shadow-sm">
-    <h5>Agregar Nueva Persona</h5>
+    <h5 id="formTitulo">Agregar Nueva Persona</h5>
     <form id="registroForm">
+        <input type="hidden" id="editId">
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Nombre:</label>
@@ -31,7 +32,8 @@
                 <input type="text" id="phoneNumber" class="form-control" placeholder="0999999999" required>
             </div>
         </div>
-        <button type="submit" class="btn btn-success">Guardar Persona</button>
+        <button type="submit" id="btnGuardar" class="btn btn-success">Guardar Persona</button>
+        <button type="button" id="btnCancelar" class="btn btn-secondary d-none" onclick="limpiarFormulario()">Cancelar</button>
     </form>
 </div>
 
@@ -78,6 +80,7 @@
                             <td>${p.email}</td>
                             <td>${p.phoneNumber}</td>
                             <td>
+                                <button class="btn btn-warning btn-sm" onclick="prepararEdicion(${p.id}, '${p.firstName}', '${p.lastName}', '${p.email}', '${p.phoneNumber}')">Editar</button>
                                 <button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">Eliminar</button>
                             </td>
                         </tr>`;
@@ -87,70 +90,98 @@
             console.error("Error:", error);
         }
     }
+
     async function buscarPorId() {
-    const id = document.getElementById('buscarId').value;
+        const id = document.getElementById('buscarId').value;
 
-    if (!id) {
-        alert("Ingresa un ID");
-        return;
+        if (!id) {
+            alert("Ingresa un ID");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/${id}`);
+            if (!res.ok) throw new Error("No encontrado");
+
+            const p = await res.json();
+
+            const html = `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.firstName}</td>
+                    <td>${p.lastName}</td>
+                    <td>${p.email}</td>
+                    <td>${p.phoneNumber}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="prepararEdicion(${p.id}, '${p.firstName}', '${p.lastName}', '${p.email}', '${p.phoneNumber}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+
+            document.getElementById('tablaCuerpo').innerHTML = html;
+
+        } catch (error) {
+            alert("Persona no encontrada");
+        }
     }
 
-    try {
-        const res = await fetch(`${API_URL}/${id}`);
-        if (!res.ok) throw new Error("No encontrado");
-
-        const p = await res.json();
-
-        const html = `
-            <tr>
-                <td>${p.id}</td>
-                <td>${p.firstName}</td>
-                <td>${p.lastName}</td>
-                <td>${p.email}</td>
-                <td>${p.phoneNumber}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-
-        document.getElementById('tablaCuerpo').innerHTML = html;
-
-    } catch (error) {
-        alert("Persona no encontrada");
-    }
-}
-
-    // CREATE
+    // CREATE & UPDATE
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // objeto de Person con atributos
-        const nuevaPersona = {
+        const idParaEditar = document.getElementById('editId').value;
+        const personaData = {
             firstName: document.getElementById('firstName').value,
             lastName: document.getElementById('lastName').value,
             email: document.getElementById('email').value,
             phoneNumber: document.getElementById('phoneNumber').value
         };
 
+        const metodo = idParaEditar ? 'PUT' : 'POST';
+        const urlFinal = idParaEditar ? `${API_URL}/${idParaEditar}` : API_URL;
+
         try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
+            const response = await fetch(urlFinal, {
+                method: metodo,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nuevaPersona)
+                body: JSON.stringify(personaData)
             });
 
             if (response.ok) {
-                alert("¡Persona registrada con éxito!");
-                document.getElementById('registroForm').reset(); // limpiar el formulario
-                cargarDatos(); // refrescar la tabla
+                alert(idParaEditar ? "¡Persona actualizada!" : "¡Persona registrada!");
+                limpiarFormulario();
+                cargarDatos();
             } else {
-                alert("Error al guardar. Revisa la consola.");
+                alert("Error al procesar la solicitud.");
             }
         } catch (error) {
-            console.error("Error al enviar:", error);
+            console.error("Error:", error);
         }
     });
+
+    // Cargar datos en el formulario para editar
+    function prepararEdicion(id, firstName, lastName, email, phoneNumber) {
+        document.getElementById('editId').value = id;
+        document.getElementById('firstName').value = firstName;
+        document.getElementById('lastName').value = lastName;
+        document.getElementById('email').value = email;
+        document.getElementById('phoneNumber').value = phoneNumber;
+
+        document.getElementById('formTitulo').innerText = "Editar Persona ID: " + id;
+        document.getElementById('btnGuardar').innerText = "Actualizar Persona";
+        document.getElementById('btnGuardar').className = "btn btn-primary";
+        document.getElementById('btnCancelar').classList.remove('d-none');
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('registroForm').reset();
+        document.getElementById('editId').value = "";
+        document.getElementById('formTitulo').innerText = "Agregar Nueva Persona";
+        document.getElementById('btnGuardar').innerText = "Guardar Persona";
+        document.getElementById('btnGuardar').className = "btn btn-success";
+        document.getElementById('btnCancelar').classList.add('d-none');
+    }
 
     // DELETE
     async function eliminar(id) {
@@ -160,7 +191,6 @@
         }
     }
 
-    // ejecutar al cargar la página por primera vez
     cargarDatos();
 </script>
 </body>

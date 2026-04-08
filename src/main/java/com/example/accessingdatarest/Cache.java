@@ -4,18 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Cache {
-    // Instancia única (Singleton)
     private static Cache instancia;
+    // CORRECCIÓN: Inicializar el mapa aquí mismo para que nunca sea null
+    private static final Map<String, Object> datos = new HashMap<>();
 
-    // Atributo clave-valor
-    private static Map<String, Object> datos;
-
-    // Constructor privado
     private Cache() {
-        this.datos = new HashMap<>();
+        // El mapa ya está inicializado arriba
     }
 
-    // Metodo para obtener la instancia única
     public static Cache getInstancia() {
         if (instancia == null) {
             instancia = new Cache();
@@ -23,23 +19,20 @@ public class Cache {
         return instancia;
     }
 
-    // Metodo para guardar datos
     public static void set(String clave, Object valor) {
         datos.put(clave, valor);
     }
 
-    // Metodo para recuperar datos
     public static Object get(String clave) {
         return datos.get(clave);
     }
 
-    // Metodo para eliminar una clave
-    public void delete(String clave) {
+    // CORRECCIÓN: Hacerlos static para poder usarlos igual que 'set' y 'get'
+    public static void delete(String clave) {
         datos.remove(clave);
     }
 
-    // Limpiar toda la caché
-    public void clean() {
+    public static void clean() {
         datos.clear();
     }
 }

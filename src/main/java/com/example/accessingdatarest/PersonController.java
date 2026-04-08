@@ -32,7 +32,26 @@ public class PersonController {
     public Optional<Person> getPersonById(@PathVariable Long id) {
         return repository.findById(id);
     }
-    // UPDATE (PATCH)
+
+    // UPDATE (PUT)
+    @PutMapping("/{id}")
+    public ResponseEntity<Person> updatePerson(@PathVariable Long id, @RequestBody Person personDetails) {
+        return repository.findById(id).map(person -> {
+            // Actualizamos los campos
+            person.setFirstName(personDetails.getFirstName());
+            person.setLastName(personDetails.getLastName());
+            person.setEmail(personDetails.getEmail());
+            person.setPhoneNumber(personDetails.getPhoneNumber());
+
+            // Guardamos en la base de datos
+            Person updated = repository.save(person);
+
+            // Guardamos en el caché usando la clave "person_" + id
+            Cache.set("person_" + id, updated);
+
+            return ResponseEntity.ok(updated);
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
     // DELETE (DELETE)
     @DeleteMapping("/{id}")
