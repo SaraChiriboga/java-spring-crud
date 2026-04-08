@@ -7,9 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AccessingDataRestApplication {
 
   public static void main(String[] args) {SpringApplication.run(AccessingDataRestApplication.class, args);
-    Cache.getInstancia();
-    Cache.set("01", "Y");
+
   }
-
-
 }
