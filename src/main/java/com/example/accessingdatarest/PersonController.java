@@ -2,6 +2,7 @@ package com.example.accessingdatarest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/people")
@@ -23,4 +24,16 @@ public class PersonController {
     // UPDATE (PATCH)
 
     // DELETE (DELETE)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePerson(@PathVariable Long id) {
+        // Primero verificamos si el registro existe en la base de datos
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            // Si se elimina correctamente, devolvemos un estado 204 (No Content)
+            return ResponseEntity.noContent().build();
+        } else {
+            // Si el ID no existe, devolvemos un estado 404 (Not Found)
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
