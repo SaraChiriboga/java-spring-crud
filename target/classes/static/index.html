@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Registros - Spring CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+<h2>Registro de Datos</h2>
+
+<div class="card card-body mb-4">
+    <form id="registroForm">
+        <input type="hidden" id="entityId">
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <input type="text" id="nombre" class="form-control" required>
+            <label>Apellido:</label>
+            <input type="text" id="apellido" class="form-control" required>
+            <label>Email:</label>
+            <input type="text" id="email" class="form-control" required>
+            <label>Numero de Teléfono:</label>
+            <input type="text" id="telefono" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody id="tablaCuerpo"></tbody>
+</table>
+
+<script>
+    const API_URL = "http://localhost:8080/api/datos"; // Ajusta a tu @RequestMapping
+
+    // 1. READ (GET)
+    async function cargarDatos() {
+        const res = await fetch(API_URL);
+        const datos = await res.json();
+        let html = '';
+        datos.forEach(d => {
+            html += `<tr>
+                    <td>${d.id}</td>
+                    <td>${d.nombre}</td>
+                    <td>${d.email}</td>
+                    <td>${d.phone}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="eliminar(${d.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+        });
+        document.getElementById('tablaCuerpo').innerHTML = html;
+    }
+
+    // 2. CREATE (POST)
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre').value;
+
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+
+        document.getElementById('registroForm').reset();
+        cargarDatos();
+    });
+
+    // 3. DELETE (DELETE)
+    async function eliminar(id) {
+        if(confirm('¿Seguro?')) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            cargarDatos();
+        }
+    }
+
+    cargarDatos(); // Carga inicial
+</script>
+</body>
+</html>
